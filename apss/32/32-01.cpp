@@ -14,14 +14,38 @@ int networkFlow(int source, int sink) {
   int totalFlow = 0;
 
   while (true) {
-    // find argumenting path using bfs
+    // find augmenting path using bfs
+    vector<int> parent(MAX_V, -1);
+    queue<int> q;
+    parent[source] = source;
+    q.push(source);
+    while (!q.empty() && parent[sink] == -1) {
+      int here = q.front();
+      q.pop();
+      for (int there = 0; there < V; ++there) {
+        if (capacity[here][there] - flow[here][there] > 0 && parent[there] == -1) {
+          q.push(there);
+          parent[there] = here;
+        }
+      }
+    }
+
+    // if there is no augmenting path, break
+    if (parent[sink] == -1) break;
+
+    // decide flow
+    int amount = INF;
+    for (int p = sink; p != source; p = parent[p]) {
+      amount = min(capacity[parent[p]][p] - flow[parent[p]][p], amount);
+    }
+
+    // flow
+    for (int p = sink; p != source; p = parent[p]) {
+      flow[parent[p]][p] += amount;
+      flow[p][parent[p]] -= amount;
+    }
+    totalFlow += amount;
   }
-
-  // if there is no argumenting path, break
-
-  // decide flow
-
-  // flow
 
   return totalFlow;
 }
